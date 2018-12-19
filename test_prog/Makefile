@@ -10,7 +10,7 @@ SUFFIX2=> out.log
 
 PRGM=test_prog.out
  
-OPTARGS1=-p -y semi_global 
+OPTARGS1=-p -y local
 OPTARGS2=-p -y semi_global --second-best
 
 

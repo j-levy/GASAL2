@@ -5,7 +5,6 @@
 #include "gasal_kernels.h"
 
 
-
 inline void gasal_kernel_launcher(int32_t N_BLOCKS, int32_t BLOCKDIM, algo_type algo, comp_start start, gasal_gpu_storage_t *gpu_storage, int32_t actual_n_alns, int32_t k_band, data_source semiglobal_skipping_head, data_source semiglobal_skipping_tail, Bool secondBest) 
 {
 	switch(algo)
@@ -20,6 +19,46 @@ inline void gasal_kernel_launcher(int32_t N_BLOCKS, int32_t BLOCKDIM, algo_type 
 		break;
 
 	}
+
+}
+
+
+void gasal_blocksize_prediction(gasal_gpu_storage_t *gpu_storage, const uint32_t actual_n_alns, const uint32_t actual_query_batch_bytes, const uint32_t actual_target_batch_bytes, Parameters *params) 
+{
+	int BLOCKDIM = 1024;   // The launch configurator returned block size (atm, 128).     uint32_t BLOCKDIM = 128; // BLOCKDIM
+	int minGridSize; // The minimum grid size needed to achieve the 
+					// maximum occupancy for a full device launch 
+	//int gridSize;    // The actual grid size needed, based on input size 
+
+	cudaOccupancyMaxPotentialBlockSize( &minGridSize, &BLOCKDIM, gasal_pack_kernel, 0,0); 
+	// Round up according to array size 
+
+    uint32_t N_BLOCKS = (actual_n_alns + BLOCKDIM - 1) / BLOCKDIM; // aka gridSize
+
+	int query_batch_tasks_per_thread = (int)ceil((double)actual_query_batch_bytes/(8*BLOCKDIM*N_BLOCKS));
+	int target_batch_tasks_per_thread = (int)ceil((double)actual_target_batch_bytes/(8*BLOCKDIM*N_BLOCKS));
+	
+	gasal_pack_kernel<<<N_BLOCKS, BLOCKDIM, 0, gpu_storage->str>>>((uint32_t*)(gpu_storage->unpacked_query_batch),
+		(uint32_t*)(gpu_storage->unpacked_target_batch), gpu_storage->packed_query_batch, gpu_storage->packed_target_batch,
+		query_batch_tasks_per_thread, target_batch_tasks_per_thread, actual_query_batch_bytes/4, actual_target_batch_bytes/4);
+
+	cudaDeviceSynchronize(); 
+
+	// calculate theoretical occupancy
+	int maxActiveBlocks;
+	cudaOccupancyMaxActiveBlocksPerMultiprocessor( &maxActiveBlocks, 
+		gasal_local_kernel<Int2Type<LOCAL>, Int2Type<WITHOUT_START>, Int2Type<FALSE>>, BLOCKDIM, 0);
+
+	int device;
+	cudaDeviceProp props;
+	cudaGetDevice(&device);
+	cudaGetDeviceProperties(&props, device);
+
+	float occupancy = ((float)maxActiveBlocks * (float)BLOCKDIM / (float)props.warpSize) / (float)(props.maxThreadsPerMultiProcessor / props.warpSize);
+
+	std::cerr << "[KERNEL ORACLE] BLOCKDIM=" << BLOCKDIM << std::endl;
+	
+	std::cerr << "[KERNEL ORACLE] Theoretical occupancy:" << occupancy << std::endl;
 
 }
 
@@ -180,10 +219,9 @@ void gasal_aln_async(gasal_gpu_storage_t *gpu_storage, const uint32_t actual_que
 	}
 
 	//-----------------------------------------------------------------------------------------------------------
-	// TODO: Adjust the block size depending on the kernel execution.
 	
-    uint32_t BLOCKDIM = 128;
-    uint32_t N_BLOCKS = (actual_n_alns + BLOCKDIM - 1) / BLOCKDIM;
+    uint32_t BLOCKDIM = 128; // BLOCKDIM
+    uint32_t N_BLOCKS = (actual_n_alns + BLOCKDIM - 1) / BLOCKDIM; // aka gridSize
 
     int query_batch_tasks_per_thread = (int)ceil((double)actual_query_batch_bytes/(8*BLOCKDIM*N_BLOCKS));
     int target_batch_tasks_per_thread = (int)ceil((double)actual_target_batch_bytes/(8*BLOCKDIM*N_BLOCKS));
@@ -194,9 +232,14 @@ void gasal_aln_async(gasal_gpu_storage_t *gpu_storage, const uint32_t actual_que
 
 	if (!(params->isPacked))
 	{
-		gasal_pack_kernel<<<N_BLOCKS, BLOCKDIM, 0, gpu_storage->str>>>((uint32_t*)(gpu_storage->unpacked_query_batch),
-		(uint32_t*)(gpu_storage->unpacked_target_batch), gpu_storage->packed_query_batch, gpu_storage->packed_target_batch,
-		query_batch_tasks_per_thread, target_batch_tasks_per_thread, actual_query_batch_bytes/4, actual_target_batch_bytes/4);
+		
+		#ifdef DEBUG_AUTO_BLOCKSIZE
+			gasal_blocksize_prediction(gpu_storage, actual_query_batch_bytes, actual_target_batch_bytes, actual_n_alns, params);
+		#else
+			gasal_pack_kernel<<<N_BLOCKS, BLOCKDIM, 0, gpu_storage->str>>>((uint32_t*)(gpu_storage->unpacked_query_batch),
+			(uint32_t*)(gpu_storage->unpacked_target_batch), gpu_storage->packed_query_batch, gpu_storage->packed_target_batch,
+			query_batch_tasks_per_thread, target_batch_tasks_per_thread, actual_query_batch_bytes/4, actual_target_batch_bytes/4);
+		#endif
 		cudaError_t pack_kernel_err = cudaGetLastError();
 		if ( cudaSuccess != pack_kernel_err )
 		{
@@ -232,7 +275,8 @@ void gasal_aln_async(gasal_gpu_storage_t *gpu_storage, const uint32_t actual_que
 
     //--------------------------------------launch alignment kernels--------------------------------------------------------------
 	
-	gasal_kernel_launcher(N_BLOCKS, BLOCKDIM, params->algo, params->start_pos, gpu_storage, actual_n_alns, params->k_band, params->semiglobal_skipping_head, params->semiglobal_skipping_tail, params->secondBest);
+
+		gasal_kernel_launcher(N_BLOCKS, BLOCKDIM, params->algo, params->start_pos, gpu_storage, actual_n_alns, params->k_band, params->semiglobal_skipping_head, params->semiglobal_skipping_tail, params->secondBest);
 
 
         //-----------------------------------------------------------------------------------------------------------------------

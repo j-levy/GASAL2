@@ -20,7 +20,7 @@
 #define CORE_LOCAL_COMPUTE() \
     uint32_t gbase = (gpac >> l) & 15; /* get a base from target_batch sequence */ \
     DEV_GET_SUB_SCORE_LOCAL(subScore, rbase, gbase);/* check equality of rbase and gbase */\
-    register int32_t curr_hm_diff = h[m] - _cudaGapOE;\
+    int32_t curr_hm_diff = h[m] - _cudaGapOE;\
     f[m] = max(curr_hm_diff, f[m] - _cudaGapExtend);/* whether to introduce or extend a gap in query_batch sequence */\
     curr_hm_diff = p[m] + subScore;/* score if rbase is aligned to gbase */\
     curr_hm_diff = max(curr_hm_diff, f[m]);\
@@ -39,7 +39,7 @@
 #define CORE_MICROLOCAL_COMPUTE() \
     uint32_t gbase = (gpac >> l) & 15; /* get a base from target_batch sequence */ \
     DEV_GET_SUB_SCORE_LOCAL(subScore, rbase, gbase);/* check equality of rbase and gbase */\
-    register int32_t curr_hm_diff = h[m] - _cudaGapOE;\
+    int32_t curr_hm_diff = h[m] - _cudaGapOE;\
     f[m] = max(curr_hm_diff, f[m] - _cudaGapExtend);/* whether to introduce or extend a gap in query_batch sequence */\
     curr_hm_diff = p[m] + subScore;/* score if rbase is aligned to gbase */\
     curr_hm_diff = max(curr_hm_diff, f[m]);\
@@ -115,12 +115,12 @@ __global__ void gasal_local_kernel(uint32_t *packed_query_batch, uint32_t *packe
             p[m] = 0;
         }
 		
-		register uint32_t gpac =packed_target_batch[packed_target_batch_idx + i];//load 8 packed bases from target_batch sequence
+		uint32_t gpac =packed_target_batch[packed_target_batch_idx + i];//load 8 packed bases from target_batch sequence
 		gidx = i << 3;
 		ridx = 0;
 		
 		for (j = 0; j < query_batch_regs; j+=1) { //query_batch sequence in columns
-			register uint32_t rpac =packed_query_batch[packed_query_batch_idx + j];//load 8 bases from query_batch sequence
+			uint32_t rpac =packed_query_batch[packed_query_batch_idx + j];//load 8 bases from query_batch sequence
 
             //--------------compute a tile of 8x8 cells-------------------
             for (k = 28; k >= 0; k -= 4) {
@@ -131,7 +131,7 @@ __global__ void gasal_local_kernel(uint32_t *packed_query_batch, uint32_t *packe
                 e = HD.y;
 
 
-                register int32_t prev_hm_diff = h[0] - _cudaGapOE;
+                int32_t prev_hm_diff = h[0] - _cudaGapOE;
                 #pragma unroll 8
                 for (l = 28, m = 1; m < 9; l -= 4, m++) {
                     if (SAMETYPE(T, Int2Type<MICROLOCAL>))    {
@@ -223,12 +223,12 @@ __global__ void gasal_local_kernel(uint32_t *packed_query_batch, uint32_t *packe
                 f[m] = 0;
                 p[m] = 0;
             }
-            register uint32_t gpac =packed_target_batch[packed_target_batch_idx - i];//load 8 packed bases from target_batch sequence
+            uint32_t gpac =packed_target_batch[packed_target_batch_idx - i];//load 8 packed bases from target_batch sequence
             gidx = gidx - 8;
             ridx = (rend_reg << 3) - 1;
             int32_t global_idx = 0;
             for (j = 0; j < rend_reg && maxHH < fwd_score; j+=1) {
-                register uint32_t rpac =packed_query_batch[packed_query_batch_idx - j];//load 8 packed bases from query_batch sequence
+                uint32_t rpac =packed_query_batch[packed_query_batch_idx - j];//load 8 packed bases from query_batch sequence
                 //--------------compute a tile of 8x8 cells-------------------
                 for (k = 0; k <= 28 && maxHH < fwd_score; k += 4) {
                     uint32_t rbase = (rpac >> k) & 15;//get a base from query_batch sequence
@@ -237,7 +237,7 @@ __global__ void gasal_local_kernel(uint32_t *packed_query_batch, uint32_t *packe
                     h[0] = HD.x;
                     e = HD.y;
 
-                    register int32_t prev_hm_diff = h[0] - _cudaGapOE;
+                    int32_t prev_hm_diff = h[0] - _cudaGapOE;
                     #pragma unroll 8
                     for (l = 28, m = 1; m < 9; l -= 4, m++) {
                         if (SAMETYPE(T, Int2Type<MICROLOCAL>))    {

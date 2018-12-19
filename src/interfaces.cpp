@@ -41,6 +41,8 @@ void gasal_set_device(int gpu_select)
 		}
 		cudaGetDeviceProperties(&properties, gpu_select);
 		fprintf(stderr, "Selected device %d : %s\n", gpu_select, properties.name);
+		fprintf(stderr,"\tprops.maxThreadsPerMultiProcessor=%d \n" , properties.maxThreadsPerMultiProcessor);
+		fprintf(stderr, "\tprops.warpSize=%d \n", properties.warpSize);
 		cudaSetDevice(gpu_select);
 	}
 }

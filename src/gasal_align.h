@@ -97,4 +97,9 @@ inline void gasal_kernel_launcher(int32_t N_BLOCKS, int32_t BLOCKDIM, algo_type 
 
 int gasal_is_aln_async_done(gasal_gpu_storage_t *gpu_storage);
 
+void gasal_blocksize_prediction(gasal_gpu_storage_t *gpu_storage, const uint32_t actual_n_alns, const uint32_t actual_query_batch_bytes, const uint32_t actual_target_batch_bytes, Parameters *params);
+
+//#define DEBUG_AUTO_BLOCKSIZE
+
+
 #endif
