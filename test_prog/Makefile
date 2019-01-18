@@ -1,4 +1,4 @@
-CUDA_LD_LIBRARY=/usr/lib/x86_64-linux-gnu/
+CUDA_LD_LIBRARY=/usr/local/cuda
 MAX_SEQ_LEN=300
 
 .cpp.o:

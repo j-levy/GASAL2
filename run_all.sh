@@ -1,5 +1,5 @@
 #!/bin/bash
-./personal_configure.sh
+./configure.sh
 make
 cd test_prog
 make

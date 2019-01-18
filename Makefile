@@ -1,10 +1,10 @@
-GPU_SM_ARCH=sm_20
+GPU_SM_ARCH=sm_35
 MAX_SEQ_LEN=300
-N_CODE=0x4E
-N_PENALTY=-2
+N_CODE=4
+N_PENALTY=1
 
 GPU_COMPUTE_ARCH=$(subst sm,compute,$(GPU_SM_ARCH))
-NVCC=/usr/lib/nvidia-cuda-toolkit/bin/nvcc
+NVCC=/usr/local/cuda
 SRC_DIR=./src/
 OBJ_DIR=./obj/
 LIB_DIR=./lib/
@@ -33,10 +33,10 @@ endif
 .SUFFIXES: .cu .c .o .cc .cpp
 ifeq ($(N_PENALTY),)
 .cu.o:
-	$(NVCC) -ccbin clang-3.8 --compiler-options -fpie -c -g -O3 -Xcompiler -Wall,-DMAX_SEQ_LEN=$(MAX_SEQ_LEN),-DN_CODE=$(N_CODE) -Xptxas -Werror  --gpu-architecture=$(GPU_COMPUTE_ARCH) --gpu-code=$(GPU_SM_ARCH) -lineinfo --ptxas-options=-v --default-stream per-thread $< -o $(OBJ_DIR)$@
+	$(NVCC) -c -g -O3 -Xcompiler -Wall,-DMAX_SEQ_LEN=$(MAX_SEQ_LEN),-DN_CODE=$(N_CODE) -Xptxas -Werror  --gpu-architecture=$(GPU_COMPUTE_ARCH) --gpu-code=$(GPU_SM_ARCH) -lineinfo --ptxas-options=-v --default-stream per-thread $< -o $(OBJ_DIR)$@
 else
 .cu.o:
-	$(NVCC) -ccbin clang-3.8 --compiler-options -fpie -c -g -O3 -Xcompiler -Wall,-DMAX_SEQ_LEN=$(MAX_SEQ_LEN),-DN_CODE=$(N_CODE),-DN_PENALTY=$(N_PENALTY) -Xptxas -Werror  --gpu-architecture=$(GPU_COMPUTE_ARCH) --gpu-code=$(GPU_SM_ARCH) -lineinfo --ptxas-options=-v --default-stream per-thread $< -o $(OBJ_DIR)$@
+	$(NVCC) -c -g -O3 -Xcompiler -Wall,-DMAX_SEQ_LEN=$(MAX_SEQ_LEN),-DN_CODE=$(N_CODE),-DN_PENALTY=$(N_PENALTY) -Xptxas -Werror  --gpu-architecture=$(GPU_COMPUTE_ARCH) --gpu-code=$(GPU_SM_ARCH) -lineinfo --ptxas-options=-v --default-stream per-thread $< -o $(OBJ_DIR)$@
 endif
 all: makedir libgasal.a
 
