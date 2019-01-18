@@ -3,5 +3,5 @@
 make
 cd test_prog
 make
-make fullrun
+make run
 cd ..

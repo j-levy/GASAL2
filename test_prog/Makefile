@@ -15,7 +15,7 @@ clean:
 test_prog.o: Timer.h
 
 run: all
-	 ./test_prog.out -p -s -y local short_query_batch.fasta short_target_batch.fasta > out.log
+	 ./test_prog.out -p -s -y local short_query_batch.fasta short_target_batch.fasta > original_out.log
 
 fullrun: all
-	./test_prog.out -p -s -y local query_batch.fasta target_batch.fasta > out.log
+	./test_prog.out -p -s -y local query_batch.fasta target_batch.fasta > original_out.log
