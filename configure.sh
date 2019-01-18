@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-cuda_path=$1
+cuda_path=/usr/local/cuda
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 

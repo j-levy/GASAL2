@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "/usr/include/cuda_runtime.h"
+#include "/usr/local/cuda/targets/x86_64-linux/include/cuda_runtime.h"
 
 
 #ifndef HOST_MALLOC_SAFETY_FACTOR

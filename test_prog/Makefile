@@ -1,4 +1,4 @@
-CUDA_LD_LIBRARY=/usr/local/cuda
+CUDA_LD_LIBRARY=/usr/local/cuda/targets/x86_64-linux/lib
 MAX_SEQ_LEN=300
 
 .cpp.o:
@@ -15,7 +15,7 @@ clean:
 test_prog.o: Timer.h
 
 run: all
-	optirun ./test_prog.out -p -y semi_global short_query_batch.fasta short_target_batch.fasta > out.log
+	 ./test_prog.out -p -s -y local short_query_batch.fasta short_target_batch.fasta > out.log
 
 fullrun: all
-	optirun ./test_prog.out -p -y semi_global query_batch.fasta target_batch.fasta > out.log
+	./test_prog.out -p -s -y local query_batch.fasta target_batch.fasta > out.log
