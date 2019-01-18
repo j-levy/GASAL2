@@ -15,7 +15,7 @@
 using namespace std;
 
 
-#define GPU_BATCH_SIZE 10000
+#define GPU_BATCH_SIZE 262000
 
 
 int main(int argc, char *argv[]) {

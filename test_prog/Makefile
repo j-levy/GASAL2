@@ -19,3 +19,10 @@ run: all
 
 fullrun: all
 	./test_prog.out -p -s -y local query_batch.fasta target_batch.fasta > original_out.log
+
+human150: all
+	./test_prog.out -p -s -y local reads_150_human_10M.fasta ref_150_human_10M.fasta > original_out.log
+
+
+262k: all
+	./test_prog.out -p -s -y local reads_150.fasta ref_150.fasta > original_out.log
