@@ -19,6 +19,8 @@ Parameters::Parameters(int argc_, char **argv_) {
     
     k_band = (0);
 
+    zdrop = (0);
+
     isPacked = false;
     isReverseComplement = false;
 

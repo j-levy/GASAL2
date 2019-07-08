@@ -44,7 +44,7 @@ typedef struct {
 } eh_t;
 
 template <typename B>
-__global__ void gasal_ksw_kernel(uint32_t *packed_query_batch, uint32_t *packed_target_batch,  uint32_t *query_batch_lens, uint32_t *target_batch_lens, uint32_t *query_batch_offsets, uint32_t *target_batch_offsets, uint32_t *seed_score, gasal_res_t *device_res, gasal_res_t *device_res_second, int n_tasks)
+__global__ void gasal_ksw_kernel(uint32_t *packed_query_batch, uint32_t *packed_target_batch,  uint32_t *query_batch_lens, uint32_t *target_batch_lens, uint32_t *query_batch_offsets, uint32_t *target_batch_offsets, uint32_t *seed_score, gasal_res_t *device_res, gasal_res_t *device_res_second, int n_tasks, int32_t zdrop)
 {
     const uint32_t tid = (blockIdx.x * blockDim.x) + threadIdx.x;//thread ID
     if (tid >= n_tasks) return;
@@ -59,7 +59,7 @@ __global__ void gasal_ksw_kernel(uint32_t *packed_query_batch, uint32_t *packed_
     int32_t subScore;
     uint32_t target_tile_id, target_base_id, query_tile_id, query_base_id;
     uint32_t gpac, rpac, gbase, rbase;
-    int zdrop = 0;
+    
 
     int o_del = _cudaGapO;
     int o_ins = _cudaGapO;
