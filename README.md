@@ -26,6 +26,8 @@ It can also reverse and, or complement any sequences independently before alignm
 
 It is an extension of GASAL (https://github.com/nahmedraja/GASAL) and allows full overlapping of CPU and GPU execution. 
 
+**Traceback computation has been implemented in a separate branch __with_tb__. Switch to this branch to see it.**
+
 ## Requirements
 A Linux platform with CUDA toolkit 8 or higher is required, along with usual build environment for C and C++ code. GASAL2 has been tested over NVIDIA GPUs with compute capabilities of 2.0, 3.5 and 5.0. Although lower versions of the CUDA framework might work, they have not been tested.
 
